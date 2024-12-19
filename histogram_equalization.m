@@ -1,7 +1,11 @@
-function [NewImage] = histogram_equalization(I)
+function [NewImage] = histogram_equalization(input_img)
     
     % 读取图像并转换为灰度图像
-    Image = rgb2gray(I);  % 读取并转换为灰度图像
+    if size(input_img, 3) == 3
+        Image = rgb2gray(input_img);  % 将彩色图像转换为灰度图像
+    else
+        Image = input_img;  % 如果已经是灰度图像，直接使用
+    end
     
     % 计算原始灰度图像的直方图
     histgram = imhist(Image);  % 统计图像直方图
