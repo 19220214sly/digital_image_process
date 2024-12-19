@@ -22,7 +22,7 @@ function varargout = birdSystem(varargin)
 
 % Edit the above text to modify the response to help birdSystem
 
-% Last Modified by GUIDE v2.5 18-Dec-2024 21:08:45
+% Last Modified by GUIDE v2.5 19-Dec-2024 20:10:45
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -226,6 +226,7 @@ function pushbutton3_Callback(hObject, eventdata, handles)
         option21 = get(handles.radiobutton21, 'Value');
         option22 = get(handles.radiobutton22, 'Value');
         option24 = get(handles.radiobutton24, 'Value');
+        option25 = get(handles.radiobutton25, 'Value');
         
 
         %获取文件
@@ -349,6 +350,10 @@ function pushbutton3_Callback(hObject, eventdata, handles)
            alpha=get(handles.edit16,"String");
            display(alpha);
            data=linear_gray_transform(data,str2double(alpha));
+        end
+        if option25
+           %高斯滤波(5*5模板,sigma=1)
+           data=gaussian_filter(data);
         end
         % 在axes2上显示处理后的图像
         axes(handles.axes2);
@@ -994,3 +999,12 @@ function edit16_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in radiobutton25.
+function radiobutton25_Callback(hObject, eventdata, handles)
+% hObject    handle to radiobutton25 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of radiobutton25
