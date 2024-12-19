@@ -22,7 +22,7 @@ function varargout = birdSystem(varargin)
 
 % Edit the above text to modify the response to help birdSystem
 
-% Last Modified by GUIDE v2.5 13-Dec-2024 01:28:36
+% Last Modified by GUIDE v2.5 18-Dec-2024 21:08:45
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -216,8 +216,16 @@ function pushbutton3_Callback(hObject, eventdata, handles)
         option6 = get(handles.radiobutton6, 'Value');
         option7 = get(handles.radiobutton7, 'Value');
         option8 = get(handles.radiobutton8, 'Value');
-        option13 = get(handles.radiobutton13, 'Value');
         option14 = get(handles.radiobutton14, 'Value');
+        option15 = get(handles.radiobutton15, 'Value');
+        option16 = get(handles.radiobutton16, 'Value');
+        option17 = get(handles.radiobutton17, 'Value');
+        option18 = get(handles.radiobutton18, 'Value');
+        option19 = get(handles.radiobutton19, 'Value');
+        option20 = get(handles.radiobutton20, 'Value');
+        option21 = get(handles.radiobutton21, 'Value');
+        option22 = get(handles.radiobutton22, 'Value');
+        option24 = get(handles.radiobutton24, 'Value');
         
 
         %获取文件
@@ -269,11 +277,13 @@ function pushbutton3_Callback(hObject, eventdata, handles)
             %图像双边滤波
             data=bilateral_filter(data);
         end
-        if option13
+        if option15
             %图像边缘检测
-            %先获得可编辑文本
-            mode=get(handles.edit8,"String");
-            data=edgeDetection(data,mode);
+            %先获得下拉框
+            mode=get(handles.popupmenu5,'String');
+            index=get(handles.popupmenu5,'Value');
+            mod=mode{index};
+            data=edgeDetection(data,mod);
         end
         if option14
             %图像低通滤波
@@ -281,7 +291,65 @@ function pushbutton3_Callback(hObject, eventdata, handles)
             D0=get(handles.edit9,"String");
             data=ideal_lowpass_filter_color(data,str2num(D0));
         end
-        
+        if option16
+            %目标提取
+            % % 定义分割结果的根目录
+            % segmentation_root = 'D:\数字图像处理\大作业\segmentations';
+            % % 获取原始图像路径中的文件夹部分
+            % [folder_path, file_name, file_extension] = fileparts(file);
+            % % 提取原始图像路径中的子文件夹（例如：'007.Parakeet_Auklet'）
+            % sub_folder = strsplit(folder_path, '\');
+            % sub_folder_name = sub_folder{end};
+            % file_extension='.png';
+            % % 构造分割图像的路径
+            % segmentation_image_path = fullfile(segmentation_root, sub_folder_name, [file_name, file_extension]);
+            % binary_image=imread(segmentation_image_path);
+            % % 确保二值图像是二值的（0 或 1），而不是 0 或 255
+            % binary_image = imbinarize(binary_image);
+            % % 显示分割图像的路径
+            % disp(['分割图像的路径是：', segmentation_image_path]);
+            % data = data .* uint8(repmat(binary_image, [1 1 3]));
+            % 读取图像
+            threshold=5;
+            binary_image=TestRegionGrowingSegmentation(file,threshold);
+            data = data .* uint8(repmat(binary_image, [1 1 3]));
+                      
+        end
+        if option17
+            %灰度化
+            data=gray_image(file);
+        end
+        if option18
+            %分段线性变换
+            data=piecewise_linear_gray(data);
+        end
+        if option19
+            %指数变换
+            
+            data=expTransform(data);
+        end
+        if option20
+            %对数变换
+            data=logTransform(data);
+        end
+        if option21
+            %直方图均衡化
+            data=histogram_equalization(data);
+        end
+        if option22
+            %直方图匹配
+            [name, path] = uigetfile("*.jpg"); % 只显示jpg格式图片
+
+            % 拼接文件完整路径
+            fullPath = fullfile(path, name);
+            des=imread(fullPath);
+            data=histogram_matching(data,des);
+        end
+        if option24
+           alpha=get(handles.edit16,"String");
+           display(alpha);
+           data=linear_gray_transform(data,str2double(alpha));
+        end
         % 在axes2上显示处理后的图像
         axes(handles.axes2);
         imshow(data);
@@ -616,9 +684,9 @@ function pushbutton6_Callback(hObject, eventdata, handles)
         result = string(target) + string(name);
         set(handles.text23,"String",result);
         if matlab_res==result
-            set(handles.text25,"String","预测正确","ForegroundColor", [0, 1, 0]);
+            set(handles.text25,"String","识别正确","ForegroundColor", [0, 0, 0]);
         else
-            set(handles.text25,"String","预测错误","ForegroundColor", [1, 0, 0]);
+            set(handles.text25,"String","识别错误","ForegroundColor", [1, 0, 0]);
         end
     else
         model_path='D:/PycharmTestProject/test_pytorch/checkpoints(resnet18)/checkpoint_epoch_19.pt'
@@ -633,8 +701,296 @@ function pushbutton6_Callback(hObject, eventdata, handles)
         result = string(target) + string(name);
         set(handles.text23,"String",result);
         if matlab_res==result
-            set(handles.text25,"String","预测正确","ForegroundColor", [0, 1, 0]);
+            set(handles.text25,"String","识别正确","ForegroundColor", [0, 0, 0]);
         else
-            set(handles.text25,"String","预测错误","ForegroundColor", [1, 0, 0]);
+            set(handles.text25,"String","识别错误","ForegroundColor", [1, 0, 0]);
         end
     end
+
+
+% --- Executes on selection change in popupmenu5.
+function popupmenu5_Callback(hObject, eventdata, handles)
+% hObject    handle to popupmenu5 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popupmenu5 contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popupmenu5
+
+
+% --- Executes during object creation, after setting all properties.
+function popupmenu5_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popupmenu5 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in radiobutton15.
+function radiobutton15_Callback(hObject, eventdata, handles)
+% hObject    handle to radiobutton15 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of radiobutton15
+
+
+% --- Executes on button press in pushbutton7.
+function pushbutton7_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton7 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+[name, path] = uigetfile("*.jpg"); % 只显示jpg格式图片
+
+if isequal(path, 0)
+    disp('User selected Cancel');
+    return; % 取消操作时直接退出
+end
+
+disp(['Selected path: ', path]);
+disp(['Selected file: ', name]);
+
+% 拼接文件完整路径
+fullPath = fullfile(path, name);
+
+disp(['Full file path: ', fullPath]);
+
+% 检查文件是否存在
+if exist(fullPath, 'file') == 2
+    img=imread(fullPath);
+    axes(handles.axes6);
+    imshow(img);
+    axes(handles.axes10);
+    imhist(img);
+    set(handles.axes6, 'userdata', fullPath);
+else
+    disp('Selected file does not exist or is not accessible.');
+end
+
+
+% --- Executes on button press in pushbutton9.
+function pushbutton9_Callback(hObject, eventdata, handles)%直方图匹配回调函数
+% hObject    handle to pushbutton9 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+%获取文件
+    src=get(handles.axes1,'userdata');
+    des=get(handles.axes6,'userdata');
+    %读取文件
+    src=imread(src);
+    des=imread(des);
+    
+    %直方图匹配
+    matched = histogram_matching(src, des);
+    axes(handles.axes2);
+    imshow(matched);
+    axes(handles.axes8);
+    imhist(matched);
+
+
+% --- Executes on button press in radiobutton16.
+function radiobutton16_Callback(hObject, eventdata, handles)
+% hObject    handle to radiobutton16 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of radiobutton16
+
+
+% --- Executes during object creation, after setting all properties.
+function radiobutton16_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to radiobutton16 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes on button press in radiobutton17.
+function radiobutton17_Callback(hObject, eventdata, handles)
+% hObject    handle to radiobutton17 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of radiobutton17
+
+
+% --- Executes on button press in radiobutton18.
+function radiobutton18_Callback(hObject, eventdata, handles)
+% hObject    handle to radiobutton18 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of radiobutton18
+
+
+% --- Executes on button press in radiobutton19.
+function radiobutton19_Callback(hObject, eventdata, handles)
+% hObject    handle to radiobutton19 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of radiobutton19
+
+
+% --- Executes on button press in radiobutton20.
+function radiobutton20_Callback(hObject, eventdata, handles)
+% hObject    handle to radiobutton20 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of radiobutton20
+
+
+% --- Executes on button press in radiobutton21.
+function radiobutton21_Callback(hObject, eventdata, handles)
+% hObject    handle to radiobutton21 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of radiobutton21
+
+
+% --- Executes on button press in radiobutton22.
+function radiobutton22_Callback(hObject, eventdata, handles)
+% hObject    handle to radiobutton22 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of radiobutton22
+
+
+
+function edit10_Callback(hObject, eventdata, handles)
+% hObject    handle to edit10 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit10 as text
+%        str2double(get(hObject,'String')) returns contents of edit10 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit10_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit10 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit13_Callback(hObject, eventdata, handles)
+% hObject    handle to edit13 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit13 as text
+%        str2double(get(hObject,'String')) returns contents of edit13 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit13_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit13 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit14_Callback(hObject, eventdata, handles)
+% hObject    handle to edit14 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit14 as text
+%        str2double(get(hObject,'String')) returns contents of edit14 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit14_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit14 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit15_Callback(hObject, eventdata, handles)
+% hObject    handle to edit15 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit15 as text
+%        str2double(get(hObject,'String')) returns contents of edit15 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit15_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit15 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in radiobutton23.
+function radiobutton23_Callback(hObject, eventdata, handles)
+% hObject    handle to radiobutton23 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of radiobutton23
+
+
+% --- Executes on button press in radiobutton24.
+function radiobutton24_Callback(hObject, eventdata, handles)
+% hObject    handle to radiobutton24 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of radiobutton24
+
+
+
+function edit16_Callback(hObject, eventdata, handles)
+% hObject    handle to edit16 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit16 as text
+%        str2double(get(hObject,'String')) returns contents of edit16 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit16_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit16 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
