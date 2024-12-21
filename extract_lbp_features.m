@@ -61,3 +61,4 @@ function [lbp_image1, lbp_image2] = extract_lbp_features(image1, image2)
     imhist(lbp_image2);
     title('目标提取图像 LBP 直方图');
 end
+

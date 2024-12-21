@@ -310,10 +310,18 @@ function pushbutton3_Callback(hObject, eventdata, handles)
             % % 显示分割图像的路径
             % disp(['分割图像的路径是：', segmentation_image_path]);
             % data = data .* uint8(repmat(binary_image, [1 1 3]));
+            %先获得下拉框
+            mode=get(handles.popupmenu7,'String');
+            index=get(handles.popupmenu7,'Value');
+            mod=mode{index};
             % 读取图像
-            threshold=5;
-            binary_image=TestRegionGrowingSegmentation(file,threshold);
-            data = data .* uint8(repmat(binary_image, [1 1 3]));
+            if mod=="区域生长"
+                threshold=5;
+                binary_image=TestRegionGrowingSegmentation(file,threshold);
+                data = data .* uint8(repmat(binary_image, [1 1 3]));
+            else
+                data=kmeans_target_extraction(data,2);
+            end
                       
         end
         if option17
@@ -1033,6 +1041,27 @@ function pushbutton11_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton11 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+option=get(handles.radiobutton16,'Value');
+    if option
+        %获取原图像
+        file=get(handles.axes1,'userdata');
+        %读取文件
+        src=imread(file);
+        %目标提取后的图像
+        des=get(handles.axes2,'userdata');
+        [~,image_hog1]=extractHOG(src);
+        [~,image_hog2]=extractHOG(des);
+        figure;
+        subplot(1,2,1);
+        imshow(image_hog1);
+        title('原图 HOG 特征图');
+        
+        subplot(1,2,2);
+        imshow(image_hog2);
+        title('目标提取图像 HOG 特征图');
+        
+
+    end  
 
 
 % --- Executes on selection change in popupmenu7.

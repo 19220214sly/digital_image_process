@@ -16,8 +16,6 @@ function target_img = kmeans_target_extraction(input_img, k)
     % 将聚类结果映射回图像尺寸
     segmented_img = reshape(cluster_idx, rows, cols);
 
-    % 假设目标区域是聚类中数值较大的部分（例如第k个类是目标）
-    % 我们可以根据聚类的分布选择目标区域的类（例如，选择聚类编号为k的区域）
     target_img = (segmented_img == k);  % 提取聚类编号为k的目标区域
 
     % 将目标区域从原图中提取出来
